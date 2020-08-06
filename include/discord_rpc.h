@@ -49,12 +49,13 @@ typedef struct DiscordUser {
 } DiscordUser;
 
 typedef struct DiscordEventHandlers {
-    void (*ready)(const DiscordUser* request);
-    void (*disconnected)(int errorCode, const char* message);
-    void (*errored)(int errorCode, const char* message);
-    void (*joinGame)(const char* joinSecret);
-    void (*spectateGame)(const char* spectateSecret);
-    void (*joinRequest)(const DiscordUser* request);
+    void* userData;
+    void (*ready)(void* userData, const DiscordUser* request);
+    void (*disconnected)(void* userData, int errorCode, const char* message);
+    void (*errored)(void* userData, int errorCode, const char* message);
+    void (*joinGame)(void* userData, const char* joinSecret);
+    void (*spectateGame)(void* userData, const char* spectateSecret);
+    void (*joinRequest)(void* userData, const DiscordUser* request);
 } DiscordEventHandlers;
 
 #define DISCORD_REPLY_NO 0

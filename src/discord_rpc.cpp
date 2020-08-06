@@ -414,7 +414,8 @@ extern "C" DISCORD_EXPORT void Discord_RunCallbacks(void)
         // if we are connected, disconnect cb first
         std::lock_guard<std::mutex> guard(HandlerMutex);
         if (wasDisconnected && Handlers.disconnected) {
-            Handlers.disconnected(LastDisconnectErrorCode, LastDisconnectErrorMessage);
+            Handlers.disconnected(
+              Handlers.userData, LastDisconnectErrorCode, LastDisconnectErrorMessage);
         }
     }
 
@@ -425,28 +426,28 @@ extern "C" DISCORD_EXPORT void Discord_RunCallbacks(void)
                            connectedUser.username,
                            connectedUser.discriminator,
                            connectedUser.avatar};
-            Handlers.ready(&du);
+            Handlers.ready(Handlers.userData, &du);
         }
     }
 
     if (GotErrorMessage.exchange(false)) {
         std::lock_guard<std::mutex> guard(HandlerMutex);
         if (Handlers.errored) {
-            Handlers.errored(LastErrorCode, LastErrorMessage);
+            Handlers.errored(Handlers.userData, LastErrorCode, LastErrorMessage);
         }
     }
 
     if (WasJoinGame.exchange(false)) {
         std::lock_guard<std::mutex> guard(HandlerMutex);
         if (Handlers.joinGame) {
-            Handlers.joinGame(JoinGameSecret);
+            Handlers.joinGame(Handlers.userData, JoinGameSecret);
         }
     }
 
     if (WasSpectateGame.exchange(false)) {
         std::lock_guard<std::mutex> guard(HandlerMutex);
         if (Handlers.spectateGame) {
-            Handlers.spectateGame(SpectateGameSecret);
+            Handlers.spectateGame(Handlers.userData, SpectateGameSecret);
         }
     }
 
@@ -461,7 +462,7 @@ extern "C" DISCORD_EXPORT void Discord_RunCallbacks(void)
             std::lock_guard<std::mutex> guard(HandlerMutex);
             if (Handlers.joinRequest) {
                 DiscordUser du{req->userId, req->username, req->discriminator, req->avatar};
-                Handlers.joinRequest(&du);
+                Handlers.joinRequest(Handlers.userData, &du);
             }
         }
         JoinAskQueue.CommitSend();
@@ -471,7 +472,8 @@ extern "C" DISCORD_EXPORT void Discord_RunCallbacks(void)
         // if we are not connected, disconnect message last
         std::lock_guard<std::mutex> guard(HandlerMutex);
         if (wasDisconnected && Handlers.disconnected) {
-            Handlers.disconnected(LastDisconnectErrorCode, LastDisconnectErrorMessage);
+            Handlers.disconnected(
+              Handlers.userData, LastDisconnectErrorCode, LastDisconnectErrorMessage);
         }
     }
 }
